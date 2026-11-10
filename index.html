@@ -42,10 +42,11 @@ h1{font-size:clamp(1.65rem,6.5vw,2.65rem);line-height:1.03;font-weight:900;lette
 .progress .done{background:#d9f4e7;color:#105c40}
 .guide{display:none}
 .game{min-width:0;background:#fff;border:1px solid var(--border);border-radius:20px;padding:11px;box-shadow:0 8px 24px #321b6310}
-.game-top{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:0 3px 8px}
+.game-top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 3px 8px}
+.stage-info{min-width:0}
 .game-kicker{color:var(--purple);font-weight:850;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase}
 h2{margin-top:2px;font-size:1.27rem;letter-spacing:-.035em}
-.step{font-size:.74rem;color:#482599;font-weight:850;background:#eee6ff;padding:6px 8px;border-radius:20px;white-space:nowrap}
+.step{display:inline-block;margin-top:3px;font-size:.74rem;color:#482599;font-weight:850;background:#eee6ff;padding:3px 8px;border-radius:20px;white-space:nowrap}
 .pad{display:block;width:100%;height:clamp(240px,calc(100svh - 402px),385px);min-height:240px;background-color:#fcfaff;background-image:radial-gradient(#dfd5ee 1px,transparent 1px);background-size:14px 14px;border:2px solid #e9e0f6;border-radius:15px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair}
 .pad path{fill:none;stroke-linecap:round;stroke-linejoin:round}
 .guide-lane{stroke:#f0eaf9;stroke-width:52}
@@ -57,12 +58,12 @@ h2{margin-top:2px;font-size:1.27rem;letter-spacing:-.035em}
 .marker circle{fill:var(--purple);stroke:#fff;stroke-width:2.5}
 .marker text{fill:#fff;font:850 12px system-ui;text-anchor:middle;dominant-baseline:central}
 .marker path{stroke:var(--purple);stroke-width:2.5}
-.game-footer{display:grid;gap:7px;margin-top:8px}
+.game-footer{margin-top:8px}
 .feedback{display:flex;align-items:center;gap:7px;min-height:39px;background:#f3eefc;border-radius:10px;padding:6px 9px;color:#433063;font-size:.79rem;font-weight:680}
 .feedback[data-tone="error"]{background:#fff1de;color:#783e0d}
 .feedback[data-tone="success"]{background:#e1f6ea;color:var(--green)}
 .feedback-icon{font-size:1rem;flex:none;font-weight:900}
-.action{min-height:43px;border-radius:11px;padding:8px 14px;font-weight:850;border:1px solid #d7c8f1;background:white;color:#4e2a99}
+.action{flex-shrink:0;min-height:44px;border-radius:11px;padding:8px 10px;font-size:.84rem;font-weight:850;border:1px solid #d7c8f1;background:white;color:#4e2a99}
 .action.primary{background:var(--purple);border-color:var(--purple);color:white}
 .action:active,.mode:active{transform:translateY(1px)}
 .action:disabled{color:#777083;background:#f7f5fa;cursor:default}
@@ -85,7 +86,6 @@ h2{margin-top:2px;font-size:1.27rem;letter-spacing:-.035em}
   .guide{display:block;border-radius:15px;border:1px solid var(--border);padding:12px;background:#fff;font-size:.81rem;color:var(--muted)}
   .guide strong{display:block;color:var(--ink);margin-bottom:4px}
   .game{padding:14px}
-  .game-footer{grid-template-columns:1fr auto}
   .pad{height:clamp(300px,calc(100svh - 380px),415px)}
 }
 @media(max-width:360px){.intro{min-height:111px}.intro p:last-child{max-width:12rem}.mascot{width:30%}}
@@ -133,8 +133,12 @@ h2{margin-top:2px;font-size:1.27rem;letter-spacing:-.035em}
     </aside>
     <section class="game" aria-labelledby="stage-title">
       <div class="game-top">
-        <div><p class="game-kicker" id="stage-number"></p><h2 id="stage-title"></h2></div>
-        <span class="step" id="step"></span>
+        <div class="stage-info">
+          <p class="game-kicker" id="stage-number"></p>
+          <h2 id="stage-title"></h2>
+          <span class="step" id="step"></span>
+        </div>
+        <button type="button" id="action" class="action"></button>
       </div>
       <svg id="pad" class="pad" viewBox="23 10 274 228" role="img" aria-label="Área de traçado" aria-describedby="feedback"></svg>
       <div class="celebration" id="celebration" hidden>
@@ -143,7 +147,6 @@ h2{margin-top:2px;font-size:1.27rem;letter-spacing:-.035em}
       </div>
       <div class="game-footer">
         <div class="feedback" id="feedback" role="status"><span class="feedback-icon" id="feedback-icon" aria-hidden="true"></span><span id="feedback-text"></span></div>
-        <button type="button" id="action" class="action"></button>
       </div>
     </section>
   </div>
@@ -299,7 +302,7 @@ function showStroke() {
   placeMarker();
   byId('step').textContent = 'Traço ' + (strokeIndex + 1) + ' de ' + strokes.length;
   feedback(strokeIndex ? 'Agora siga a bolinha ' + (strokeIndex + 1) + '.' : 'Siga a seta. Pode levantar o dedo e continuar.');
-  setAction('Recomeçar fase', false, strokeIndex === 0);
+  setAction('Reiniciar fase', false, strokeIndex === 0);
 }
 
 function position(event, matrix) {
@@ -375,7 +378,7 @@ function draw(event) {
   if (progressIndex !== before) {
     stroke.ink.setAttribute('stroke-dasharray', (stroke.length * progressIndex / last) + ' ' + stroke.length);
     stroke.ink.removeAttribute('visibility');
-    if (action.disabled) setAction('Recomeçar fase');
+    if (action.disabled) setAction('Reiniciar fase');
   }
   if (active.offGuide) {
     if (!wasOutside || progressIndex !== before) placeMarker();

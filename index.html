@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f8f7ff">
+<title>Trilha do Traço</title>
+<style>
+:root{color-scheme:light;--paper:#f8f7ff;--ink:#211749;--muted:#625978;--purple:#5224c3;--lavender:#eae2fc;--border:#e5dff1;--green:#086747;--gold:#ffd470}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:system-ui,-apple-system,sans-serif}
+button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible{outline:3px solid var(--purple);outline-offset:3px}
+[hidden]{display:none!important}
+.top{background:#fff;border-bottom:1px solid var(--border)}
+.top-inner{max-width:880px;margin:auto;min-height:57px;padding:8px 17px;display:flex;align-items:center;justify-content:space-between;gap:7px}
+.brand,.score{display:flex;align-items:center;gap:8px;font-weight:850;white-space:nowrap}
+.brand-mark{width:33px;height:33px;border-radius:10px;background:var(--purple);display:grid;place-items:center;color:white;transform:rotate(-6deg)}
+.brand-mark svg{width:21px;height:21px}
+.score{font-size:.84rem;background:#fff1cd;color:#6b4204;padding:6px 10px;border-radius:50px}
+.star{width:17px;height:17px;flex:none;fill:var(--gold);stroke:#975800;stroke-width:1.6;stroke-linejoin:round}
+main{max-width:880px;margin:auto;padding:15px 14px 20px}
+.intro{position:relative;isolation:isolate;overflow:hidden;min-height:123px;border-radius:23px;background:#29165d;color:white;padding:14px 18px 16px;display:flex;align-items:center}
+.intro-text{z-index:1}
+.eyebrow{margin:0 0 4px;color:#decfff;font-size:.65rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+h1,h2,p{margin:0}
+h1{font-size:clamp(1.65rem,6.5vw,2.65rem);line-height:1.03;font-weight:900;letter-spacing:-.055em}
+.intro p:last-child{margin-top:7px;color:#f0e8ff;font-size:.84rem;max-width:16rem}
+.mascot{position:absolute;right:3px;bottom:0;height:100%;width:32%;max-width:190px;pointer-events:none}
+.layout{display:grid;gap:12px;margin-top:12px}
+.sidebar{display:grid;gap:9px;align-content:start;min-width:0}
+.modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.mode{display:flex;align-items:center;text-align:left;gap:8px;min-width:0;min-height:51px;background:white;color:var(--ink);border:1px solid var(--border);border-radius:14px;padding:5px 8px;line-height:1.1}
+.mode[aria-pressed="true"]{background:#eee6ff;border-color:#a78be7}
+.mode-icon{display:grid;place-items:center;flex:none;background:#e8defb;color:#482599;border-radius:8px;width:32px;height:32px;font-weight:900;font-size:.82rem}
+.mode[data-mode="numbers"] .mode-icon{background:#d8f4ea;color:#145840}
+.mode-title{display:block;font-weight:850;font-size:.92rem}
+.mode-count{display:block;color:var(--muted);font-size:.68rem;margin-top:3px}
+.progress{list-style:none;display:flex;align-items:center;gap:5px;margin:0;padding:0;min-width:0}
+.progress li{height:27px;min-width:0;width:30px;display:grid;place-items:center;background:#ebe7f2;color:#615675;border-radius:7px;font-weight:800;font-size:.73rem}
+.progress li[aria-current]{color:white;background:var(--purple)}
+.progress .done{background:#d9f4e7;color:#105c40}
+.guide{display:none}
+.game{min-width:0;background:#fff;border:1px solid var(--border);border-radius:20px;padding:11px;box-shadow:0 8px 24px #321b6310}
+.game-top{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:0 3px 8px}
+.game-kicker{color:var(--purple);font-weight:850;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase}
+h2{margin-top:2px;font-size:1.27rem;letter-spacing:-.035em}
+.step{font-size:.74rem;color:#482599;font-weight:850;background:#eee6ff;padding:6px 8px;border-radius:20px;white-space:nowrap}
+.pad{display:block;width:100%;height:clamp(240px,calc(100svh - 402px),385px);min-height:240px;background-color:#fcfaff;background-image:radial-gradient(#dfd5ee 1px,transparent 1px);background-size:14px 14px;border:2px solid #e9e0f6;border-radius:15px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair}
+.pad path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.guide-lane{stroke:#f0eaf9;stroke-width:52}
+.guide-lane.current{stroke:#e7d9ff}
+.guide-dots{stroke:#8c70c5;stroke-width:5;stroke-dasharray:.1 11}
+.guide-dots.current{stroke:#5b37a7}
+.ink{stroke:#6738dd;stroke-width:17}
+.ink.complete{stroke:#0b926a}
+.marker circle{fill:var(--purple);stroke:#fff;stroke-width:2.5}
+.marker text{fill:#fff;font:850 12px system-ui;text-anchor:middle;dominant-baseline:central}
+.marker path{stroke:var(--purple);stroke-width:2.5}
+.game-footer{display:grid;gap:7px;margin-top:8px}
+.feedback{display:flex;align-items:center;gap:7px;min-height:39px;background:#f3eefc;border-radius:10px;padding:6px 9px;color:#433063;font-size:.79rem;font-weight:680}
+.feedback[data-tone="error"]{background:#fff1de;color:#783e0d}
+.feedback[data-tone="success"]{background:#e1f6ea;color:var(--green)}
+.feedback-icon{font-size:1rem;flex:none;font-weight:900}
+.action{min-height:43px;border-radius:11px;padding:8px 14px;font-weight:850;border:1px solid #d7c8f1;background:white;color:#4e2a99}
+.action.primary{background:var(--purple);border-color:var(--purple);color:white}
+.action:active,.mode:active{transform:translateY(1px)}
+.action:disabled{color:#777083;background:#f7f5fa;cursor:default}
+.celebration{min-height:218px;display:grid;align-content:center;justify-items:center;text-align:center;padding:20px 14px;background:#f3ecff;border-radius:15px;color:#38216d}
+.medal{width:66px;height:66px;border-radius:50%;background:#ffdf8e;display:grid;place-items:center;margin-bottom:10px}
+.medal .star{width:40px;height:40px;fill:#fff5bf}
+.celebration strong{font-size:1.45rem}
+.celebration p{margin-top:5px;font-size:.9rem}
+@media(min-width:730px){
+  main{padding:22px 22px 30px}
+  .intro{min-height:151px;padding:20px 27px}
+  .intro p:last-child{max-width:none;font-size:1rem}
+  .mascot{right:26px}
+  .layout{grid-template-columns:224px minmax(0,1fr);gap:16px;margin-top:16px}
+  .sidebar{gap:13px}
+  .modes{grid-template-columns:1fr}
+  .mode{min-height:61px;padding:8px 11px}
+  .mode-icon{width:37px;height:37px}
+  .progress{flex-wrap:wrap}
+  .guide{display:block;border-radius:15px;border:1px solid var(--border);padding:12px;background:#fff;font-size:.81rem;color:var(--muted)}
+  .guide strong{display:block;color:var(--ink);margin-bottom:4px}
+  .game{padding:14px}
+  .game-footer{grid-template-columns:1fr auto}
+  .pad{height:clamp(300px,calc(100svh - 380px),415px)}
+}
+@media(max-width:360px){.intro{min-height:111px}.intro p:last-child{max-width:12rem}.mascot{width:30%}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 15 9-9 4 4-9 9-5 1zM12 8l4 4"/></svg></span>Trilha do Traço</div>
+    <div class="score" aria-label="Estrelas conquistadas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></svg><span id="score">0 / 15</span></div>
+  </div>
+</header>
+<main>
+  <section class="intro">
+    <div class="intro-text">
+      <p class="eyebrow">Desenhe e pratique</p>
+      <h1>Trilha do Traço</h1>
+      <p>Siga o pontilhado com o dedo e conquiste estrelas!</p>
+    </div>
+    <svg class="mascot" viewBox="0 0 160 143" aria-hidden="true">
+      <path d="M4 131c13-12 34-1 48-11s14-24 24-20" fill="none" stroke="#ba9cf7" stroke-width="3" stroke-dasharray="1 7" stroke-linecap="round"/>
+      <path d="m20 40 3 8 8 3-8 3-3 8-3-8-8-3 8-3zm113 49 2 6 7 2-7 2-2 7-2-7-7-2 7-2z" fill="#ffe288"/>
+      <circle cx="40" cy="73" r="3" fill="#d9c6fa"/><circle cx="139" cy="48" r="3" fill="#d9c6fa"/>
+      <g transform="translate(69 113) rotate(27)">
+        <rect x="-17" y="-107" width="34" height="23" rx="10" fill="#ff8cb4"/>
+        <path d="M-17-93h34v11h-34z" fill="#eae4ff"/>
+        <path d="M-17-82h34v59h-34z" fill="#ffcb62"/>
+        <path d="M-5-82h10v59H-5z" fill="#ffe9a1"/>
+        <path d="m-17-23 17 25 17-25" fill="#ffdfa8"/>
+        <path d="m-6-6 6 8 6-8z" fill="#38205c"/>
+        <circle cx="-7" cy="-55" r="2" fill="#38205c"/><circle cx="7" cy="-55" r="2" fill="#38205c"/>
+        <path d="M-3-48q3 4 6 0" fill="none" stroke="#38205c" stroke-width="2" stroke-linecap="round"/>
+        <path d="M-17-38q-13-1-15-13m49 11q12-3 16-15" fill="none" stroke="#ffcb62" stroke-width="3" stroke-linecap="round"/>
+      </g>
+    </svg>
+  </section>
+  <div class="layout">
+    <aside class="sidebar" aria-label="Escolha e progresso da trilha">
+      <div class="modes" aria-label="Trilhas" role="group">
+        <button type="button" class="mode" data-mode="vowels" aria-pressed="true"><span class="mode-icon" aria-hidden="true">Aa</span><span><span class="mode-title">Vogais</span><span class="mode-count" id="vowel-count">0 de 5</span></span></button>
+        <button type="button" class="mode" data-mode="numbers" aria-pressed="false"><span class="mode-icon" aria-hidden="true">123</span><span><span class="mode-title">Números</span><span class="mode-count" id="number-count">0 de 10</span></span></button>
+      </div>
+      <ol class="progress" id="progress" aria-label="Fases da trilha"></ol>
+      <div class="guide"><strong>Como jogar</strong>Comece na bolinha e siga a seta. Pode levantar o dedo e voltar à bolinha para continuar.</div>
+    </aside>
+    <section class="game" aria-labelledby="stage-title">
+      <div class="game-top">
+        <div><p class="game-kicker" id="stage-number"></p><h2 id="stage-title"></h2></div>
+        <span class="step" id="step"></span>
+      </div>
+      <svg id="pad" class="pad" viewBox="23 10 274 228" role="img" aria-label="Área de traçado" aria-describedby="feedback"></svg>
+      <div class="celebration" id="celebration" hidden>
+        <span class="medal" aria-hidden="true"><svg class="star" viewBox="0 0 24 24"><path d="m12 2 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></svg></span>
+        <strong id="celebration-title"></strong><p id="celebration-text"></p>
+      </div>
+      <div class="game-footer">
+        <div class="feedback" id="feedback" role="status"><span class="feedback-icon" id="feedback-icon" aria-hidden="true"></span><span id="feedback-text"></span></div>
+        <button type="button" id="action" class="action"></button>
+      </div>
+    </section>
+  </div>
+  <noscript>Ative o JavaScript do navegador para jogar.</noscript>
+</main>
+<script>
+'use strict';
+
+const paths = {
+  A: ['M89 203 L160 43', 'M160 43 L231 203', 'M114 151 H206'],
+  E: ['M113 45 V203', 'M113 45 H214', 'M113 122 H196', 'M113 203 H214'],
+  I: ['M160 45 V203'],
+  O: ['M160 43 C118 43 93 78 93 124 S118 205 160 205 S227 170 227 124 S202 43 160 43 Z'],
+  U: ['M101 45 V141 C101 183 123 205 160 205 S219 183 219 141 V45'],
+  1: ['M121 81 L161 45 V203'],
+  2: ['M105 78 C115 35 182 31 205 64 C235 107 158 149 109 203 H219'],
+  3: ['M108 65 C140 29 209 39 209 81 C209 104 187 119 157 120 C190 118 216 131 216 160 C216 208 146 221 104 185'],
+  4: ['M174 45 L98 151 H220', 'M189 45 V203'],
+  5: ['M209 45 H119 L110 121 C131 104 159 101 183 111 C225 128 229 175 195 195 C167 213 128 208 102 182'],
+  6: ['M203 60 C171 24 111 54 103 116 C96 169 112 205 159 205 C199 205 219 181 217 153 C214 119 190 107 160 109 C137 110 117 122 103 144'],
+  7: ['M101 45 H219 L143 203'],
+  8: ['M160 43 C110 43 91 86 129 108 C167 130 220 135 219 171 C218 215 103 219 101 172 C99 136 153 128 191 107 C229 85 209 43 160 43 Z'],
+  9: ['M217 105 C200 132 170 145 143 137 C105 128 94 105 102 79 C112 45 157 32 186 51 C219 72 224 108 216 143 C208 186 179 215 130 201'],
+  10: ['M61 80 L99 45 V203', 'M205 43 C167 43 147 78 147 124 S167 205 205 205 S263 170 263 124 S243 43 205 43 Z']
+};
+const trails = {
+  vowels: { label: 'Vogal', symbols: ['A', 'E', 'I', 'O', 'U'], completed: 0 },
+  numbers: { label: 'Número', symbols: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'], completed: 0 }
+};
+
+const byId = id => document.getElementById(id);
+const pad = byId('pad');
+const action = byId('action');
+const modes = [...document.querySelectorAll('.mode')];
+const svgNS = 'http://www.w3.org/2000/svg';
+const sampleStep = 3;
+const resumeRadius = 34;
+const trailRadius = 30;
+const endRadius = 27;
+let mode = 'vowels';
+let strokes = [];
+let strokeIndex = 0;
+let progressIndex = 0;
+let active = null;
+let earned = false;
+let stageTimer;
+let marker;
+
+function svg(name, attrs) {
+  const element = document.createElementNS(svgNS, name);
+  for (const [key, value] of Object.entries(attrs)) element.setAttribute(key, value);
+  return element;
+}
+
+function feedback(message, tone = 'hint') {
+  byId('feedback').dataset.tone = tone;
+  byId('feedback-icon').textContent = {hint:'✦', error:'↺', success:'✓'}[tone];
+  byId('feedback-text').textContent = message;
+}
+
+function setAction(label, primary = false, disabled = false) {
+  action.textContent = label;
+  action.classList.toggle('primary', primary);
+  action.disabled = disabled;
+}
+
+function updateProgress() {
+  const total = trails.vowels.completed + trails.numbers.completed;
+  byId('score').textContent = total + ' / 15';
+  byId('vowel-count').textContent = trails.vowels.completed + ' de 5';
+  byId('number-count').textContent = trails.numbers.completed + ' de 10';
+  for (const button of modes) button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+  const trail = trails[mode];
+  byId('progress').replaceChildren(...trail.symbols.map((symbol, index) => {
+    const item = document.createElement('li');
+    item.textContent = symbol;
+    if (index < trail.completed) {
+      item.className = 'done';
+      item.setAttribute('aria-label', symbol + ', concluído');
+    } else if (index === trail.completed) {
+      item.setAttribute('aria-current', 'step');
+    }
+    return item;
+  }));
+}
+
+function renderStage() {
+  clearTimeout(stageTimer);
+  releasePointer();
+  earned = false;
+  strokeIndex = 0;
+  strokes = [];
+  pad.replaceChildren();
+  updateProgress();
+
+  const trail = trails[mode];
+  const symbol = trail.symbols[trail.completed];
+  const finished = symbol === undefined;
+  pad.hidden = finished;
+  byId('celebration').hidden = !finished;
+  byId('step').hidden = finished;
+  if (finished) {
+    const wonAll = trails.vowels.completed + trails.numbers.completed === 15;
+    byId('stage-number').textContent = wonAll ? '15 de 15 estrelas' : 'Trilha concluída';
+    byId('stage-title').textContent = wonAll ? 'Você venceu!' : 'Parabéns!';
+    byId('celebration-title').textContent = wonAll ? 'Campeão do traço!' : mode === 'vowels' ? 'Vogais completas!' : 'Números completos!';
+    byId('celebration-text').textContent = wonAll ? 'Você cobriu todas as vogais e todos os números.' : 'Você ganhou todas as estrelas desta trilha.';
+    feedback(wonAll ? 'Todas as fases concluídas!' : 'Tem mais estrelas na outra trilha.', 'success');
+    setAction(wonAll ? 'Jogar de novo' : mode === 'vowels' ? 'Jogar com números' : 'Jogar com vogais', true);
+    return;
+  }
+
+  byId('stage-number').textContent = 'Fase ' + (trail.completed + 1) + ' de ' + trail.symbols.length;
+  byId('stage-title').textContent = trail.label + ' ' + symbol;
+  pad.setAttribute('aria-label', 'Área de traçado para ' + trail.label.toLowerCase() + ' ' + symbol);
+  strokes = paths[symbol].map(d => {
+    const lane = svg('path', {d, class:'guide-lane'});
+    pad.append(lane);
+    const length = lane.getTotalLength();
+    const segments = Math.ceil(length / sampleStep);
+    const points = Array.from({length:segments + 1}, (_, index) => lane.getPointAtLength(index * length / segments));
+    return {
+      lane, length, points,
+      dots:svg('path', {d, class:'guide-dots'}),
+      ink:svg('path', {d, class:'ink', visibility:'hidden'})
+    };
+  });
+  pad.append(...strokes.map(stroke => stroke.dots), ...strokes.map(stroke => stroke.ink));
+  marker = svg('g', {class:'marker'});
+  pad.append(marker);
+  showStroke();
+}
+
+function placeMarker() {
+  const {points} = strokes[strokeIndex];
+  const here = points[progressIndex];
+  const ahead = points[Math.min(progressIndex + 11, points.length - 1)];
+  const angle = Math.atan2(ahead.y - here.y, ahead.x - here.x) * 180 / Math.PI;
+  marker.removeAttribute('visibility');
+  marker.setAttribute('transform', 'translate(' + here.x + ' ' + here.y + ')');
+  const arrow = svg('path', {d:'M18 0 H31 M26 -4 L31 0 L26 4', transform:'rotate(' + angle + ')'});
+  const number = svg('text', {x:0, y:0});
+  number.textContent = strokeIndex + 1;
+  marker.replaceChildren(arrow, svg('circle', {cx:0, cy:0, r:14}), number);
+}
+
+function showStroke() {
+  progressIndex = 0;
+  strokes.forEach((stroke, index) => {
+    stroke.lane.classList.toggle('current', index === strokeIndex);
+    stroke.dots.classList.toggle('current', index === strokeIndex);
+  });
+  placeMarker();
+  byId('step').textContent = 'Traço ' + (strokeIndex + 1) + ' de ' + strokes.length;
+  feedback(strokeIndex ? 'Agora siga a bolinha ' + (strokeIndex + 1) + '.' : 'Siga a seta. Pode levantar o dedo e continuar.');
+  setAction('Recomeçar fase', false, strokeIndex === 0);
+}
+
+function position(event, matrix) {
+  return new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix);
+}
+
+function distance(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function onStart(event) {
+  if (active || earned || !event.isPrimary || event.button !== 0 || !strokes[strokeIndex]) return;
+  const matrix = pad.getScreenCTM()?.inverse();
+  if (!matrix) return;
+  const point = position(event, matrix);
+  const stroke = strokes[strokeIndex];
+  if (distance(point, stroke.points[progressIndex]) > resumeRadius) {
+    feedback('Toque na bolinha roxa para ' + (progressIndex ? 'continuar.' : 'começar.'), 'error');
+    return;
+  }
+  event.preventDefault();
+  pad.setPointerCapture(event.pointerId);
+  active = {id:event.pointerId, previous:point, offGuide:false};
+  marker.setAttribute('visibility', 'hidden');
+  feedback('Siga o caminho até o fim.');
+}
+
+// Follow nearby checkpoints in order so pausing is allowed but skipping ahead earns no credit.
+function record(point) {
+  const {points} = strokes[strokeIndex];
+  const previous = active.previous;
+  const length = distance(previous, point);
+  if (length < .5) return;
+  const subdivisions = Math.ceil(length / sampleStep);
+  for (let index = 1; index <= subdivisions; index++) {
+    const fraction = index / subdivisions;
+    const sample = {
+      x:previous.x + (point.x - previous.x) * fraction,
+      y:previous.y + (point.y - previous.y) * fraction
+    };
+    const next = Math.min(points.length - 1, progressIndex + 2);
+    while (progressIndex < next && distance(sample, points[progressIndex + 1]) <= trailRadius) {
+      progressIndex++;
+    }
+    const first = Math.max(0, progressIndex - 9);
+    active.offGuide = true;
+    for (let check = first; check <= progressIndex; check++) {
+      if (distance(sample, points[check]) <= trailRadius) {
+        active.offGuide = false;
+        break;
+      }
+    }
+  }
+  active.previous = point;
+}
+
+function draw(event) {
+  if (!active || event.pointerId !== active.id) return;
+  const matrix = pad.getScreenCTM()?.inverse();
+  if (!matrix) return;
+
+  const before = progressIndex;
+  const wasOutside = active.offGuide;
+  for (const sample of event.getCoalescedEvents?.() ?? []) record(position(sample, matrix));
+  record(position(event, matrix));
+
+  const stroke = strokes[strokeIndex];
+  const last = stroke.points.length - 1;
+  if (progressIndex >= last - 3 && distance(active.previous, stroke.points[last]) <= endRadius) {
+    finishStroke();
+    return;
+  }
+  if (progressIndex !== before) {
+    stroke.ink.setAttribute('stroke-dasharray', (stroke.length * progressIndex / last) + ' ' + stroke.length);
+    stroke.ink.removeAttribute('visibility');
+    if (action.disabled) setAction('Recomeçar fase');
+  }
+  if (active.offGuide) {
+    if (!wasOutside || progressIndex !== before) placeMarker();
+    if (!wasOutside) feedback('Volte para a bolinha. Seu traço ficou guardado.');
+  } else if (wasOutside) {
+    marker.setAttribute('visibility', 'hidden');
+    feedback('Isso! Siga até o fim.');
+  }
+}
+
+function releasePointer() {
+  if (!active) return;
+  const pointerId = active.id;
+  active = null;
+  if (pad.hasPointerCapture(pointerId)) pad.releasePointerCapture(pointerId);
+}
+
+function pauseStroke(event) {
+  if (!active || event.pointerId !== active.id) return;
+  releasePointer();
+  placeMarker();
+  feedback(progressIndex ? 'Continue da bolinha quando quiser.' : 'Siga a seta. Pode levantar o dedo e continuar.');
+}
+
+function finishStroke() {
+  releasePointer();
+  const stroke = strokes[strokeIndex];
+  stroke.ink.removeAttribute('stroke-dasharray');
+  stroke.ink.removeAttribute('visibility');
+  stroke.ink.classList.add('complete');
+  strokeIndex++;
+  if (strokeIndex < strokes.length) {
+    showStroke();
+    return;
+  }
+  earned = true;
+  marker.setAttribute('visibility', 'hidden');
+  byId('step').textContent = 'Completo ✓';
+  const trail = trails[mode];
+  trail.completed++;
+  updateProgress();
+  feedback('Muito bem! Você ganhou uma estrela.', 'success');
+  setAction('Continuar →', true);
+  stageTimer = setTimeout(advanceStage, 1100);
+}
+
+pad.addEventListener('pointerdown', onStart);
+pad.addEventListener('pointermove', draw);
+pad.addEventListener('pointerup', event => {
+  draw(event);
+  pauseStroke(event);
+});
+pad.addEventListener('pointercancel', pauseStroke);
+pad.addEventListener('lostpointercapture', pauseStroke);
+for (const button of modes) {
+  button.addEventListener('click', () => {
+    if (mode === button.dataset.mode) return;
+    mode = button.dataset.mode;
+    renderStage();
+  });
+}
+function advanceStage() {
+  const otherMode = mode === 'vowels' ? 'numbers' : 'vowels';
+  if (trails[mode].completed === trails[mode].symbols.length &&
+      trails[otherMode].completed < trails[otherMode].symbols.length) {
+    mode = otherMode;
+  }
+  renderStage();
+}
+
+action.addEventListener('click', () => {
+  if (!earned && trails.vowels.completed + trails.numbers.completed === 15) {
+    trails.vowels.completed = 0;
+    trails.numbers.completed = 0;
+    mode = 'vowels';
+  }
+  advanceStage();
+});
+
+renderStage();
+</script>
+</body>
+</html>
